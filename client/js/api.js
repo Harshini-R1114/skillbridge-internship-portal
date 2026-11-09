@@ -1,7 +1,26 @@
 // SkillBridge API Bridge (Hybrid Online/Offline)
 import { store } from './state.js';
 
-const API_BASE = 'http://localhost:5000/api';
+export function getApiBase() {
+  if (typeof window !== 'undefined') {
+    if (window.__SKILLBRIDGE_API_URL__) return window.__SKILLBRIDGE_API_URL__;
+    const stored = localStorage.getItem('SKILLBRIDGE_API_URL');
+    if (stored) return stored;
+    if (window.location && window.location.hostname && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      return 'http://localhost:5000/api';
+    }
+  }
+  return '/api';
+}
+
+export function setApiBase(url) {
+  if (typeof window !== 'undefined') {
+    window.__SKILLBRIDGE_API_URL__ = url;
+    localStorage.setItem('SKILLBRIDGE_API_URL', url);
+  }
+}
+
+const API_BASE = getApiBase();
 
 async function fetchWithFallback(endpoint, options = {}) {
   try {

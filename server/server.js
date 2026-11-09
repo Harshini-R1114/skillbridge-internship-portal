@@ -3,7 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const crypto = require('crypto');
+const { connectDB, getDBStatus } = require('./config/db');
 const { initialUsers, initialInternships, initialApplications } = require('./data/seedData');
+
+// Connect to MongoDB Atlas if connection string exists
+connectDB();
 
 const PORT = process.env.PORT || 5000;
 const STORE_PATH = path.join(__dirname, 'data', 'store.json');
@@ -234,6 +238,17 @@ const server = http.createServer(async (req, res) => {
   // ----------------------------------------------------------------
   // REST API ROUTES
   // ----------------------------------------------------------------
+
+  // 0. System Health Check
+  if (pathname === '/api/health' && method === 'GET') {
+    return sendJSON(res, 200, {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      service: 'SkillBridge Career Portal API',
+      environment: process.env.NODE_ENV || 'production',
+      database: getDBStatus() ? 'MongoDB Atlas Connected' : 'In-Memory/File Active'
+    });
+  }
 
   // 1. Auth: Register
   if (pathname === '/api/auth/register' && method === 'POST') {
